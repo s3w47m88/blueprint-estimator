@@ -988,6 +988,7 @@ function useFramingDraw(view: string) {
 
 function useBlueprintCanvas(view: string, rotation3D: { x: number; y: number; z: number }, showSiding: boolean, showRoofing: boolean, showFlooring: boolean, showRoofDeck: boolean) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draw = useFramingDraw(view);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1008,12 +1009,10 @@ function useBlueprintCanvas(view: string, rotation3D: { x: number; y: number; z:
       scale = Math.min(width / (SHED.depth * GRID_SIZE * 1.1), height / (SHED.height * GRID_SIZE * 1.3));
     }
 
-    const draw = useFramingDraw(view);
-
     ctx.clearRect(0, 0, width, height);
     drawGrid(ctx, width, height, scale * 0.5);
     draw(ctx, scale, width, height, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
-  }, [view, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck]);
+  }, [view, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck, draw]);
 
   return canvasRef;
 }
