@@ -293,19 +293,19 @@ function useFramingDraw(view: string) {
         let zCentered = z - d / 2;
 
         // Apply Y-axis rotation (yaw - left-right)
-        let rot = rotateY(xCentered, zCentered, rotation3D.x);
-        let xRot = rot.x;
-        let zRot = rot.z;
+        let rotY = rotateY(xCentered, zCentered, rotation3D.x);
+        let xRot = rotY.x;
+        let zRot = rotY.z;
 
         // Apply X-axis rotation (tilt - up-down)
-        rot = rotateX(yCentered, zRot, rotation3D.y);
-        let yRot = rot.y;
-        zRot = rot.z;
+        let rotX = rotateX(yCentered, zRot, rotation3D.y);
+        let yRot = rotX.y;
+        zRot = rotX.z;
 
         // Apply Z-axis rotation (roll)
-        rot = rotateZ(xRot, yRot, rotation3D.z);
-        xRot = rot.x;
-        yRot = rot.y;
+        let rotZ = rotateZ(xRot, yRot, rotation3D.z);
+        xRot = rotZ.x;
+        yRot = rotZ.y;
 
         // Apply isometric projection and center on canvas
         return {
