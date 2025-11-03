@@ -1399,8 +1399,11 @@ export default function BlueprintEstimator() {
               </Button>
             </div>
 
-            <DialogClose asChild>
-              <button className="absolute top-2 right-2 text-slate-400 hover:text-slate-600">✕</button>
+            <DialogClose
+              className="absolute top-2 right-2 text-slate-400 hover:text-slate-600"
+              onClick={() => setSelectedPart(null)}
+            >
+              ✕
             </DialogClose>
           </DialogContent>
         </Dialog>
