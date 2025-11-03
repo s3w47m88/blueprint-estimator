@@ -1183,6 +1183,7 @@ export default function BlueprintEstimator() {
                       setRotation3D({
                         x: startRotation.x + deltaX * 0.01,
                         y: startRotation.y + deltaY * 0.01,
+                        z: startRotation.z,
                       });
                     };
 
