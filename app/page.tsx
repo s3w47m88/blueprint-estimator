@@ -68,8 +68,10 @@ const DEFAULT_PARTS: Part[] = [
 
 const computeEstimate = (input: Part[]) => {
   const items = input.map((p) => ({ ...p, lineTotal: p.price * p.qty }));
-  const subtotal = items.reduce((sum, { lineTotal, excluded }) => sum + (excluded ? 0 : lineTotal), 0);
-  return { items, subtotal, total: subtotal };
+  const fullTotal = items.reduce((sum, { lineTotal }) => sum + lineTotal, 0);
+  const alreadyOwned = items.reduce((sum, { lineTotal, excluded }) => sum + (excluded ? lineTotal : 0), 0);
+  const total = fullTotal - alreadyOwned;
+  return { items, fullTotal, alreadyOwned, total };
 };
 
 const currency = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -1028,7 +1030,7 @@ export default function BlueprintEstimator() {
   const [showRoofDeck, setShowRoofDeck] = useState(false);
   const [showControlPanel, setShowControlPanel] = useState(true);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
-  const { items, subtotal, total } = computeEstimate(DEFAULT_PARTS);
+  const { items, fullTotal, alreadyOwned, total } = computeEstimate(DEFAULT_PARTS);
   const canvasRef = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
 
   const reset3DView = () => {
@@ -1064,9 +1066,19 @@ export default function BlueprintEstimator() {
         <Card className="lg:col-span-5 rounded-2xl shadow-sm border-slate-200 flex flex-col">
           <CardHeader className="flex-shrink-0">
             <CardTitle className="text-xl mb-2">Parts & Pricing</CardTitle>
-            <div className="bg-slate-100 px-3 py-2 rounded-md flex justify-between items-center text-sm font-medium">
-              <span>Total Estimate</span>
-              <span className="font-semibold text-base">{currency(total)}</span>
+            <div className="bg-slate-100 px-3 py-2 rounded-md space-y-1">
+              <div className="flex justify-between items-center text-sm">
+                <span>Full Total</span>
+                <span className="font-medium">{currency(fullTotal)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-green-600">
+                <span>Already Owned</span>
+                <span className="font-medium">-{currency(alreadyOwned)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm font-semibold border-t border-slate-300 pt-1">
+                <span>Total Estimate</span>
+                <span className="text-base">{currency(total)}</span>
+              </div>
             </div>
           </CardHeader>
 
@@ -1130,15 +1142,6 @@ export default function BlueprintEstimator() {
                   </li>
                 ))}
               </ul>
-
-              <Separator className="my-3" />
-
-              <div className="space-y-1 text-[11px]">
-                <div className="flex justify-between font-semibold text-[12px]">
-                  <span>Total</span>
-                  <span>{currency(total)}</span>
-                </div>
-              </div>
             </ScrollArea>
           </CardContent>
         </Card>
