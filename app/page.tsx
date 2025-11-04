@@ -1068,7 +1068,7 @@ export default function BlueprintEstimator() {
             <CardTitle className="text-xl mb-2">Parts & Pricing</CardTitle>
             <div className="bg-slate-100 px-3 py-2 rounded-md space-y-1">
               <div className="flex justify-between items-center text-sm">
-                <span>Full Total</span>
+                <span>Sub Total</span>
                 <span className="font-medium">{currency(fullTotal)}</span>
               </div>
               <div className="flex justify-between items-center text-sm text-green-600">
@@ -1076,7 +1076,7 @@ export default function BlueprintEstimator() {
                 <span className="font-medium">-{currency(alreadyOwned)}</span>
               </div>
               <div className="flex justify-between items-center text-sm font-semibold border-t border-slate-300 pt-1">
-                <span>Total Estimate</span>
+                <span>Grand Total</span>
                 <span className="text-base">{currency(total)}</span>
               </div>
             </div>
