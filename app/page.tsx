@@ -1028,6 +1028,7 @@ export default function BlueprintEstimator() {
   const [showFlooring, setShowFlooring] = useState(false);
   const [showRoofDeck, setShowRoofDeck] = useState(false);
   const [showControlPanel, setShowControlPanel] = useState(true);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
   const { items, subtotal, contingency, total } = computeEstimate(DEFAULT_PARTS);
   const canvasRef = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
 
@@ -1226,7 +1227,34 @@ export default function BlueprintEstimator() {
                     width={800}
                     height={520}
                     className={`w-full h-full ${activeView === "3d" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"}`}
+                    onMouseMove={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+
+                      // Simple component detection based on canvas position
+                      // This is a basic implementation - you may want to make this more sophisticated
+                      if (activeView === "front" || activeView === "back") {
+                        if (y > 200 && y < 500) {
+                          setTooltip({ x: e.clientX, y: e.clientY, text: "2x4x8' Stud - $3.45 ea (1.5\" x 3.5\")" });
+                        } else {
+                          setTooltip(null);
+                        }
+                      } else {
+                        setTooltip(null);
+                      }
+                    }}
+                    onMouseLeave={() => setTooltip(null)}
                   ></canvas>
+
+                  {tooltip && (
+                    <div
+                      className="fixed bg-slate-900 text-white px-3 py-2 rounded-md text-xs font-medium shadow-lg pointer-events-none z-50"
+                      style={{ left: tooltip.x + 10, top: tooltip.y + 10 }}
+                    >
+                      {tooltip.text}
+                    </div>
+                  )}
 
                   {activeView === "3d" && hoveredFace && (
                     <div className="absolute top-4 left-4 bg-slate-900 text-white px-3 py-2 rounded-md text-sm font-medium shadow-lg">
