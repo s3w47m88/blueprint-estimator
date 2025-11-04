@@ -1087,8 +1087,8 @@ export default function BlueprintEstimator() {
   const { canvasRef, componentRegions } = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
 
   // Group items by area
-  const groupedByArea = () => {
-    const areas = ["Front", "Back", "Left Side", "Right Side", "Floor", "Roof"];
+  const groupedByAreaData = () => {
+    const areas = ["Front", "Back", "Left Side", "Right Side", "Floor", "Roof", "General"];
     const grouped: { [key: string]: any[] } = {};
 
     areas.forEach(area => {
@@ -1124,11 +1124,35 @@ export default function BlueprintEstimator() {
             }
           }
         });
+      } else {
+        // Items without breakdown go to General
+        grouped["General"].push({
+          ...item,
+          originalIndex: index
+        });
       }
     });
 
     return grouped;
   };
+
+  const groupedByArea = groupedByAreaData();
+
+  // Calculate area-based totals
+  const areaBasedTotal = Object.values(groupedByArea).flat().reduce((sum, item: any) => {
+    return sum + (item.excluded ? 0 : item.lineTotal);
+  }, 0);
+
+  const areaBasedAlreadyOwned = Object.values(groupedByArea).flat().reduce((sum, item: any) => {
+    return sum + (item.excluded ? item.lineTotal : 0);
+  }, 0);
+
+  const areaBasedFullTotal = areaBasedTotal + areaBasedAlreadyOwned;
+
+  // Use area-based or component-based totals depending on groupBy mode
+  const displayFullTotal = groupBy === "area" ? areaBasedFullTotal : fullTotal;
+  const displayAlreadyOwned = groupBy === "area" ? areaBasedAlreadyOwned : alreadyOwned;
+  const displayTotal = groupBy === "area" ? areaBasedTotal : total;
 
   const reset3DView = () => {
     setRotation3D({ x: 0, y: 0, z: 0 });
@@ -1179,15 +1203,15 @@ export default function BlueprintEstimator() {
             <div className="bg-slate-100 px-3 py-2 rounded-md space-y-1">
               <div className="flex justify-between items-center text-sm">
                 <span>Sub Total</span>
-                <span className="font-medium">{currency(fullTotal)}</span>
+                <span className="font-medium">{currency(displayFullTotal)}</span>
               </div>
               <div className="flex justify-between items-center text-sm text-green-600">
                 <span>Already Owned</span>
-                <span className="font-medium">-{currency(alreadyOwned)}</span>
+                <span className="font-medium">-{currency(displayAlreadyOwned)}</span>
               </div>
               <div className="flex justify-between items-center text-sm font-semibold border-t border-slate-300 pt-1">
                 <span>Grand Total</span>
-                <span className="text-base">{currency(total)}</span>
+                <span className="text-base">{currency(displayTotal)}</span>
               </div>
             </div>
           </CardHeader>
@@ -1267,7 +1291,7 @@ export default function BlueprintEstimator() {
                 </ul>
               ) : (
                 <div className="space-y-4">
-                  {Object.entries(groupedByArea()).map(([area, areaItems]) => {
+                  {Object.entries(groupedByArea).map(([area, areaItems]) => {
                     const areaTotal = areaItems.reduce((sum, item: any) => sum + (item.excluded ? 0 : item.lineTotal), 0);
                     return areaItems.length > 0 && (
                       <div key={area} className="border rounded-md p-3 bg-slate-50">
