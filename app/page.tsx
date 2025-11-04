@@ -69,8 +69,7 @@ const DEFAULT_PARTS: Part[] = [
 const computeEstimate = (input: Part[]) => {
   const items = input.map((p) => ({ ...p, lineTotal: p.price * p.qty }));
   const subtotal = items.reduce((sum, { lineTotal, excluded }) => sum + (excluded ? 0 : lineTotal), 0);
-  const contingency = subtotal * 0.1;
-  return { items, subtotal, contingency, total: subtotal + contingency };
+  return { items, subtotal, total: subtotal };
 };
 
 const currency = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -1029,7 +1028,7 @@ export default function BlueprintEstimator() {
   const [showRoofDeck, setShowRoofDeck] = useState(false);
   const [showControlPanel, setShowControlPanel] = useState(true);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
-  const { items, subtotal, contingency, total } = computeEstimate(DEFAULT_PARTS);
+  const { items, subtotal, total } = computeEstimate(DEFAULT_PARTS);
   const canvasRef = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
 
   const reset3DView = () => {
@@ -1135,14 +1134,6 @@ export default function BlueprintEstimator() {
               <Separator className="my-3" />
 
               <div className="space-y-1 text-[11px]">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>{currency(subtotal)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Contingency (10%)</span>
-                  <span>{currency(contingency)}</span>
-                </div>
                 <div className="flex justify-between font-semibold text-[12px]">
                   <span>Total</span>
                   <span>{currency(total)}</span>
