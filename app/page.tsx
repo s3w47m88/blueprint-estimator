@@ -24,7 +24,7 @@ const DEFAULT_PARTS: Part[] = [
     qty: 64,
     note: "walls, plates, headers",
     price: 3.45,
-    url: "https://www.homedepot.com/p/2-in-x-4-in-x-96-in-2-Premium-Grade-KD-HT-Stud-058449/312528776",
+    url: "https://www.homedepot.com/p/2-in-x-4-in-x-96-in-2-Premium-Grade-KD-HT-Stud-058449/312528776?storeId=4008",
     breakdown: [
       { view: "Front", items: ["5 studs @ 16\" O.C.", "2 king studs", "2 jack studs", "2 top plates", "1 bottom plate", "1 top cap"] },
       { view: "Back", items: ["6 studs @ 16\" O.C.", "2 top plates", "1 bottom plate", "1 top cap"] },
@@ -38,7 +38,7 @@ const DEFAULT_PARTS: Part[] = [
     qty: 8,
     note: "corner posts",
     price: 12.98,
-    url: "https://www.homedepot.com/p/4-in-x-4-in-x-8-ft-1-Pressure-Treated-Post-4210154/202812131",
+    url: "https://www.homedepot.com/p/4-in-x-4-in-x-8-ft-1-Pressure-Treated-Post-4210154/202812131?storeId=4008",
     breakdown: [
       { view: "Front", items: ["2 corner posts"] },
       { view: "Back", items: ["2 corner posts"] },
@@ -51,19 +51,19 @@ const DEFAULT_PARTS: Part[] = [
     qty: 48,
     note: "floor & roof framing",
     price: 8.98,
-    url: "https://www.homedepot.com/p/2-in-x-6-in-x-8-ft-2-Premium-Grade-SPF-Dimensional-Lumber-161713/100037451",
+    url: "https://www.homedepot.com/p/2-in-x-6-in-x-8-ft-2-Premium-Grade-SPF-Dimensional-Lumber-161713/100037451?storeId=4008",
     breakdown: [
       { view: "Floor", items: ["18 joists @ 16\" O.C. (9 joists × 2 pieces)", "6 rim joists (perimeter)"] },
       { view: "Roof", items: ["18 joists @ 16\" O.C. (9 joists × 2 pieces)", "6 rim joists (perimeter)"] }
     ]
   },
-  { item: '7/16" OSB 4×8', qty: 16, note: "wall sheathing (12) + roof deck (4)", price: 16.48, url: "https://www.homedepot.com/p/7-16-in-x-4-ft-x-8-ft-OSB-Sheathing-386081/100091344" },
-  { item: '23/32" OSB T&G 4×8', qty: 4, note: "subfloor (8'×16' = 128 sq ft)", price: 24.98, url: "https://www.homedepot.com/p/23-32-in-T-G-OSB-Subfloor-Common-23-32-in-x-4-ft-x-8-ft-Actual-0-703-in-x-47-875-in-x-95-875-in-920924/100054132" },
+  { item: '7/16" OSB 4×8', qty: 16, note: "wall sheathing (12) + roof deck (4)", price: 16.48, url: "https://www.homedepot.com/p/7-16-in-x-4-ft-x-8-ft-OSB-Sheathing-386081/100091344?storeId=4008" },
+  { item: '23/32" OSB T&G 4×8', qty: 4, note: "subfloor (8'×16' = 128 sq ft)", price: 24.98, url: "https://www.homedepot.com/p/23-32-in-T-G-OSB-Subfloor-Common-23-32-in-x-4-ft-x-8-ft-Actual-0-703-in-x-47-875-in-x-95-875-in-920924/100054132?storeId=4008" },
   { item: 'Corrugated polycarbonate 26"×8\'', qty: 8, note: "flat roof (8' width × 16' length)", price: 27.98, excluded: true },
   { item: '3" exterior screws (5 lb)', qty: 1, note: "framing & sheathing", price: 29.97, excluded: true },
-  { item: "Roofing screws w/ EPDM (50 ct)", qty: 2, note: "roof panels", price: 15.81, url: "https://www.homedepot.com/p/Woodtite-2-in-Hex-Head-Wood-Screw-with-EPDM-washer-50-Pack-92523/100095071" },
-  { item: "Construction adhesive", qty: 1, note: "subfloor seams (optional)", price: 6.97, url: "https://www.homedepot.com/p/Liquid-Nails-10-oz-Heavy-Duty-Construction-Adhesive-LN-901/202203994" },
-  { item: "Simpson angles/plates", qty: 8, note: "optional tie-downs", price: 1.98, url: "https://www.homedepot.com/p/Simpson-Strong-Tie-2-in-x-1-1-2-in-x-2-3-4-in-Galvanized-Angle-A23/100374944" },
+  { item: "Roofing screws w/ EPDM (50 ct)", qty: 2, note: "roof panels", price: 15.81, url: "https://www.homedepot.com/p/Woodtite-2-in-Hex-Head-Wood-Screw-with-EPDM-washer-50-Pack-92523/100095071?storeId=4008" },
+  { item: "Construction adhesive", qty: 1, note: "subfloor seams (optional)", price: 6.97, url: "https://www.homedepot.com/p/Liquid-Nails-10-oz-Heavy-Duty-Construction-Adhesive-LN-901/202203994?storeId=4008" },
+  { item: "Simpson angles/plates", qty: 8, note: "optional tie-downs", price: 1.98, url: "https://www.homedepot.com/p/Simpson-Strong-Tie-2-in-x-1-1-2-in-x-2-3-4-in-Galvanized-Angle-A23/100374944?storeId=4008" },
 ];
 
 const computeEstimate = (input: Part[]) => {
