@@ -28,33 +28,31 @@ const DEFAULT_PARTS: Part[] = [
     breakdown: [
       { view: "Front", items: ["5 studs @ 16\" O.C.", "2 king studs", "2 jack studs", "2 top plates", "1 bottom plate", "1 top cap"] },
       { view: "Back", items: ["6 studs @ 16\" O.C.", "2 top plates", "1 bottom plate", "1 top cap"] },
-      { view: "Left Side", items: ["12 studs @ 16\" O.C.", "4 top plates (2 per)", "2 bottom plates", "2 top caps"] },
-      { view: "Right Side", items: ["12 studs @ 16\" O.C.", "4 top plates (2 per)", "2 bottom plates", "2 top caps"] },
+      { view: "Left Side", items: ["11 studs @ 16\" O.C. (each 8' tall)", "6 top plates @ 8' (3 runs × 2 pieces to span 16')", "2 bottom plates @ 8' (spliced to span 16')"] },
+      { view: "Right Side", items: ["11 studs @ 16\" O.C. (each 8' tall)", "6 top plates @ 8' (3 runs × 2 pieces to span 16')", "2 bottom plates @ 8' (spliced to span 16')"] },
       { view: "Header", items: ["2 pieces @ 4' for door header"] }
     ]
   },
   {
     item: "4×4×8' posts",
-    qty: 8,
+    qty: 4,
     note: "corner posts",
     price: 12.98,
     url: "https://www.homedepot.com/p/4-in-x-4-in-x-8-ft-1-Pressure-Treated-Post-4210154/202812131?storeId=4008",
     breakdown: [
       { view: "Front", items: ["2 corner posts"] },
-      { view: "Back", items: ["2 corner posts"] },
-      { view: "Left Side", items: ["2 corner posts"] },
-      { view: "Right Side", items: ["2 corner posts"] }
+      { view: "Back", items: ["2 corner posts"] }
     ]
   },
   {
     item: "2×6×8' joists",
-    qty: 48,
+    qty: 26,
     note: "floor & roof framing",
     price: 8.98,
     url: "https://www.homedepot.com/p/2-in-x-6-in-x-8-ft-2-Premium-Grade-SPF-Dimensional-Lumber-161713/100037451?storeId=4008",
     breakdown: [
-      { view: "Floor", items: ["18 joists @ 16\" O.C. (9 joists × 2 pieces)", "6 rim joists (perimeter)"] },
-      { view: "Roof", items: ["18 joists @ 16\" O.C. (9 joists × 2 pieces)", "6 rim joists (perimeter)"] }
+      { view: "Floor", items: ["7 joists @ 16\" O.C. spanning 8'", "2 rim joists @ 8' (front/back)", "4 rim joists @ 8' (left/right sides, 2 per side)"] },
+      { view: "Roof", items: ["7 joists @ 16\" O.C. spanning 8'", "2 rim joists @ 8' (front/back)", "4 rim joists @ 8' (left/right sides, 2 per side)"] }
     ]
   },
   { item: '7/16" OSB 4×8', qty: 16, note: "wall sheathing (12) + roof deck (4)", price: 16.48, url: "https://www.homedepot.com/p/7-16-in-x-4-ft-x-8-ft-OSB-Sheathing-386081/100091344?storeId=4008" },
@@ -268,9 +266,9 @@ function useFramingDraw(view: string) {
 
       // Studs along 16' length
       const clearHeight = h - 2 * thick;
-      // End corner posts (4x4): 3.5" wide
-      rect(ctx, x0, y0 + thick, fourByFour, clearHeight, COLOR_4X4, "Corner Post - 4x4x8' ($13.50) - 3.5\" × 3.5\"", componentRegions.current);
-      rect(ctx, x0 + d - fourByFour, y0 + thick, fourByFour, clearHeight, COLOR_4X4, "Corner Post - 4x4x8' ($13.50) - 3.5\" × 3.5\"", componentRegions.current);
+      // End studs (2x4): 1.5" wide
+      rect(ctx, x0, y0 + thick, thick, clearHeight, COLOR_2X4, "Wall Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
+      rect(ctx, x0 + d - thick, y0 + thick, thick, clearHeight, COLOR_2X4, "Wall Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
       // Interior studs on-center
       for (let x = studOC; x < d; x += studOC) {
         rect(ctx, x0 + x - thick / 2, y0 + thick, thick, clearHeight, COLOR_2X4, "Wall Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
@@ -1053,6 +1051,7 @@ export default function BlueprintEstimator() {
     return new Set();
   });
   const [showMessage, setShowMessage] = useState(false);
+  const [groupBy, setGroupBy] = useState<"component" | "area">("component");
 
   const toggleAcquired = (index: number) => {
     setAcquiredItems(prev => {
@@ -1087,6 +1086,50 @@ export default function BlueprintEstimator() {
   const { items, fullTotal, alreadyOwned, total } = computeEstimate(partsWithAcquired);
   const { canvasRef, componentRegions } = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
 
+  // Group items by area
+  const groupedByArea = () => {
+    const areas = ["Front", "Back", "Left Side", "Right Side", "Floor", "Roof"];
+    const grouped: { [key: string]: any[] } = {};
+
+    areas.forEach(area => {
+      grouped[area] = [];
+    });
+
+    items.forEach((item, index) => {
+      const part = DEFAULT_PARTS[index];
+      if (part.breakdown) {
+        part.breakdown.forEach(bd => {
+          const areaName = bd.view === "Left" ? "Left Side" : bd.view === "Right" ? "Right Side" : bd.view;
+          if (grouped[areaName]) {
+            // Count quantity for this specific area from the breakdown text
+            let areaQty = 0;
+            bd.items.forEach(itemText => {
+              // Extract numbers from strings like "5 studs @ 16" O.C." or "2 king studs"
+              // But ignore numbers in parentheses like "(2 per)"
+              const cleanText = itemText.replace(/\([^)]*\)/g, ''); // Remove anything in parentheses
+              const match = cleanText.match(/^(\d+)/);
+              if (match) {
+                areaQty += parseInt(match[1]);
+              }
+            });
+
+            if (areaQty > 0) {
+              const areaLineTotal = areaQty * item.price;
+              grouped[areaName].push({
+                ...item,
+                qty: areaQty,
+                lineTotal: areaLineTotal,
+                originalIndex: index
+              });
+            }
+          }
+        });
+      }
+    });
+
+    return grouped;
+  };
+
   const reset3DView = () => {
     setRotation3D({ x: 0, y: 0, z: 0 });
   };
@@ -1119,7 +1162,20 @@ export default function BlueprintEstimator() {
       <div className="mx-auto max-w-7xl p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-stretch">
         <Card className="lg:col-span-5 rounded-2xl shadow-sm border-slate-200 flex flex-col">
           <CardHeader className="flex-shrink-0">
-            <CardTitle className="text-xl mb-2">Parts & Pricing</CardTitle>
+            <div className="flex justify-between items-center mb-2">
+              <CardTitle className="text-xl">Parts & Pricing</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-600">Grouped By:</span>
+                <select
+                  value={groupBy}
+                  onChange={(e) => setGroupBy(e.target.value as "component" | "area")}
+                  className="text-xs border border-slate-300 rounded px-2 py-1 bg-white"
+                >
+                  <option value="component">Component</option>
+                  <option value="area">Area</option>
+                </select>
+              </div>
+            </div>
             <div className="bg-slate-100 px-3 py-2 rounded-md space-y-1">
               <div className="flex justify-between items-center text-sm">
                 <span>Sub Total</span>
@@ -1138,76 +1194,137 @@ export default function BlueprintEstimator() {
 
           <CardContent className="flex-1 flex flex-col overflow-hidden">
             <ScrollArea className="flex-1 pr-2">
-              <ul className="space-y-3">
-                {items.map((p, i) => (
-                  <li key={i} className="border rounded-md p-2 bg-slate-50">
-                    <div
-                      className="flex justify-between items-start cursor-pointer"
-                      onClick={() => setExpandedPart(expandedPart === i ? null : i)}
-                    >
-                      <div className="w-full">
-                        <div className="flex justify-between text-[12px] font-medium">
-                          <span className={p.excluded ? "line-through text-slate-400" : ""}>{p.item}</span>
-                          <span className={p.excluded ? "line-through text-slate-400" : ""}>{currency(p.lineTotal)}</span>
+              {groupBy === "component" ? (
+                <ul className="space-y-3">
+                  {items.map((p, i) => (
+                    <li key={i} className="border rounded-md p-2 bg-slate-50">
+                      <div
+                        className="flex justify-between items-start cursor-pointer"
+                        onClick={() => setExpandedPart(expandedPart === i ? null : i)}
+                      >
+                        <div className="w-full">
+                          <div className="flex justify-between text-[12px] font-medium">
+                            <span className={p.excluded ? "line-through text-slate-400" : ""}>{p.item}</span>
+                            <span className={p.excluded ? "line-through text-slate-400" : ""}>{currency(p.lineTotal)}</span>
+                          </div>
+                          <div className="text-slate-600 text-[11px] flex justify-between">
+                            <span className={p.excluded ? "line-through text-slate-400" : ""}>Qty: {p.qty}</span>
+                            <span className={p.excluded ? "line-through text-slate-400" : ""}>Unit: {currency(p.price)}</span>
+                          </div>
+                          {p.note && <p className={`text-[10px] mt-1 ${p.excluded ? "line-through text-slate-400" : "text-slate-500"}`}>{p.note}</p>}
+                          {p.excluded && <p className="text-[10px] text-green-600 mt-1 font-medium">Already owned</p>}
+                          {p.breakdown && (
+                            <p className="text-[10px] text-blue-600 mt-1 font-medium">
+                              {expandedPart === i ? "▼ Hide details" : "▶ Show details"}
+                            </p>
+                          )}
                         </div>
-                        <div className="text-slate-600 text-[11px] flex justify-between">
-                          <span className={p.excluded ? "line-through text-slate-400" : ""}>Qty: {p.qty}</span>
-                          <span className={p.excluded ? "line-through text-slate-400" : ""}>Unit: {currency(p.price)}</span>
-                        </div>
-                        {p.note && <p className={`text-[10px] mt-1 ${p.excluded ? "line-through text-slate-400" : "text-slate-500"}`}>{p.note}</p>}
-                        {p.excluded && <p className="text-[10px] text-green-600 mt-1 font-medium">Already owned</p>}
-                        {p.breakdown && (
-                          <p className="text-[10px] text-blue-600 mt-1 font-medium">
-                            {expandedPart === i ? "▼ Hide details" : "▶ Show details"}
-                          </p>
+                        {p.url && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPart(p);
+                            }}
+                            className="ml-2 flex-shrink-0 hover:scale-105 transition-transform"
+                          >
+                            <img
+                              src="https://upload.wikimedia.org/wikipedia/commons/5/5f/TheHomeDepot.svg"
+                              alt="Home Depot"
+                              className="w-5 h-5"
+                            />
+                          </button>
                         )}
-                      </div>
-                      {p.url && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedPart(p);
+                            toggleAcquired(i);
                           }}
-                          className="ml-2 flex-shrink-0 hover:scale-105 transition-transform"
+                          className={`ml-2 flex-shrink-0 hover:scale-105 transition-transform px-2 py-1 rounded ${
+                            acquiredItems.has(i) ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-500'
+                          }`}
+                          title={acquiredItems.has(i) ? 'Mark as not acquired' : 'Mark as acquired'}
                         >
-                          <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/5/5f/TheHomeDepot.svg"
-                            alt="Home Depot"
-                            className="w-5 h-5"
-                          />
+                          ✓
                         </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleAcquired(i);
-                        }}
-                        className={`ml-2 flex-shrink-0 hover:scale-105 transition-transform px-2 py-1 rounded ${
-                          acquiredItems.has(i) ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-500'
-                        }`}
-                        title={acquiredItems.has(i) ? 'Mark as not acquired' : 'Mark as acquired'}
-                      >
-                        ✓
-                      </button>
-                    </div>
-
-                    {expandedPart === i && p.breakdown && (
-                      <div className="mt-3 pt-3 border-t border-slate-200">
-                        {p.breakdown.map((section, idx) => (
-                          <div key={idx} className="mb-3 last:mb-0">
-                            <p className="text-[11px] font-semibold text-slate-700 mb-1">{section.view}:</p>
-                            <ul className="ml-3 space-y-1">
-                              {section.items.map((item, itemIdx) => (
-                                <li key={itemIdx} className="text-[10px] text-slate-600">• {item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
                       </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+
+                      {expandedPart === i && p.breakdown && (
+                        <div className="mt-3 pt-3 border-t border-slate-200">
+                          {p.breakdown.map((section, idx) => (
+                            <div key={idx} className="mb-3 last:mb-0">
+                              <p className="text-[11px] font-semibold text-slate-700 mb-1">{section.view}:</p>
+                              <ul className="ml-3 space-y-1">
+                                {section.items.map((item, itemIdx) => (
+                                  <li key={itemIdx} className="text-[10px] text-slate-600">• {item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="space-y-4">
+                  {Object.entries(groupedByArea()).map(([area, areaItems]) => {
+                    const areaTotal = areaItems.reduce((sum, item: any) => sum + (item.excluded ? 0 : item.lineTotal), 0);
+                    return areaItems.length > 0 && (
+                      <div key={area} className="border rounded-md p-3 bg-slate-50">
+                        <div className="flex justify-between items-center mb-2">
+                          <h3 className="text-sm font-semibold text-slate-800">{area}</h3>
+                          <span className="text-sm font-semibold text-slate-700">{currency(areaTotal)}</span>
+                        </div>
+                        <ul className="space-y-2">
+                          {areaItems.map((p: any, idx: number) => (
+                            <li key={idx} className="border-l-2 border-slate-300 pl-2">
+                              <div className="flex justify-between items-start">
+                                <div className="w-full">
+                                  <div className="flex justify-between text-[11px] font-medium">
+                                    <span className={p.excluded ? "line-through text-slate-400" : ""}>{p.item}</span>
+                                    <span className={p.excluded ? "line-through text-slate-400" : ""}>{currency(p.lineTotal)}</span>
+                                  </div>
+                                  <div className="text-slate-600 text-[10px]">
+                                    Qty: {p.qty} • Unit: {currency(p.price)}
+                                  </div>
+                                  {p.excluded && <p className="text-[9px] text-green-600 mt-1 font-medium">Already owned</p>}
+                                </div>
+                                {p.url && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedPart(p);
+                                    }}
+                                    className="ml-2 flex-shrink-0 hover:scale-105 transition-transform"
+                                  >
+                                    <img
+                                      src="https://upload.wikimedia.org/wikipedia/commons/5/5f/TheHomeDepot.svg"
+                                      alt="Home Depot"
+                                      className="w-4 h-4"
+                                    />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleAcquired(p.originalIndex ?? idx);
+                                  }}
+                                  className={`ml-2 flex-shrink-0 hover:scale-105 transition-transform px-1.5 py-0.5 rounded text-[10px] ${
+                                    acquiredItems.has(p.originalIndex ?? idx) ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-500'
+                                  }`}
+                                  title={acquiredItems.has(p.originalIndex ?? idx) ? 'Mark as not acquired' : 'Mark as acquired'}
+                                >
+                                  ✓
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </ScrollArea>
           </CardContent>
         </Card>
