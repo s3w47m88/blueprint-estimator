@@ -1398,7 +1398,7 @@ export default function BlueprintEstimator() {
       {/* Modal with Embedded Home Depot Page */}
       {selectedPart && (
         <Dialog open={!!selectedPart} onOpenChange={() => setSelectedPart(null)}>
-          <DialogContent className="rounded-2xl p-4 max-w-[80vw] max-h-[80vh] bg-white border border-slate-300 shadow-lg overflow-hidden backdrop-blur-sm">
+          <DialogContent className="rounded-2xl p-4 max-w-[70vw] max-h-[80vh] bg-white border border-slate-300 shadow-lg overflow-hidden backdrop-blur-sm">
             <DialogHeader>
               <DialogTitle className="text-lg font-semibold mb-2">{selectedPart.item}</DialogTitle>
               <DialogDescription className="text-sm text-slate-600 mb-4">
