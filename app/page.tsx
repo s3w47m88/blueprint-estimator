@@ -109,7 +109,7 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, 
   }
 }
 
-function rect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: string) {
+function rect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, fill: string, label?: string, regions?: ComponentRegion[]) {
   ctx.fillStyle = fill;
   ctx.strokeStyle = OUTLINE;
   ctx.lineWidth = 1;
@@ -117,9 +117,23 @@ function rect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h:
   ctx.rect(x, y, w, h);
   ctx.fill();
   ctx.stroke();
+
+  if (label && regions) {
+    regions.push({ x, y, width: w, height: h, label });
+  }
 }
 
+type ComponentRegion = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: string;
+};
+
 function useFramingDraw(view: string) {
+  const componentRegions = useRef<ComponentRegion[]>([]);
+
   const draw = (
     ctx: CanvasRenderingContext2D,
     scale: number,
@@ -131,6 +145,7 @@ function useFramingDraw(view: string) {
     showFlooring: boolean = false,
     showRoofDeck: boolean = false
   ) => {
+    componentRegions.current = [];
     const inch = (v: number) => v * GRID_SIZE * scale;
     const w = inch(SHED.width); // 8' width
     const h = inch(SHED.height); // 8' height
@@ -152,36 +167,36 @@ function useFramingDraw(view: string) {
     if (view === "floor") {
       // Joists: along depth (length d), thickness shown as 1.5"
       for (let x = 0; x <= d; x += studOC) {
-        rect(ctx, x0 + x - thick / 2, y0, thick, w, COLOR_2X6);
+        rect(ctx, x0 + x - thick / 2, y0, thick, w, COLOR_2X6, "Floor Joist - 2x6x16' ($8.75) - 1.5\" × 5.5\" @ 16\" O.C.", componentRegions.current);
       }
       // Ensure last joist present
-      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6);
+      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6, "Floor Joist - 2x6x16' ($8.75) - 1.5\" × 5.5\" @ 16\" O.C.", componentRegions.current);
 
       // Perimeter rim/band joists (2x6), thickness 1.5"
       // Left/right rims along depth
-      rect(ctx, x0 - thick / 2, y0, thick, w, COLOR_2X6);
-      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6);
+      rect(ctx, x0 - thick / 2, y0, thick, w, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
+      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
       // Front/back ledgers along width
-      rect(ctx, x0 - thick / 2, y0 - thick / 2, d + thick, thick, COLOR_2X6);
-      rect(ctx, x0 - thick / 2, y0 + w - thick / 2, d + thick, thick, COLOR_2X6);
+      rect(ctx, x0 - thick / 2, y0 - thick / 2, d + thick, thick, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
+      rect(ctx, x0 - thick / 2, y0 + w - thick / 2, d + thick, thick, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
     }
 
     // ---- ROOF (plan): roof joists & perimeter (same as floor) ----
     if (view === "roof") {
       // Joists: along depth (length d), thickness shown as 1.5"
       for (let x = 0; x <= d; x += studOC) {
-        rect(ctx, x0 + x - thick / 2, y0, thick, w, COLOR_2X6);
+        rect(ctx, x0 + x - thick / 2, y0, thick, w, COLOR_2X6, "Roof Joist - 2x6x16' ($8.75) - 1.5\" × 5.5\" @ 16\" O.C.", componentRegions.current);
       }
       // Ensure last joist present
-      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6);
+      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6, "Roof Joist - 2x6x16' ($8.75) - 1.5\" × 5.5\" @ 16\" O.C.", componentRegions.current);
 
       // Perimeter rim/band joists (2x6), thickness 1.5"
       // Left/right rims along depth
-      rect(ctx, x0 - thick / 2, y0, thick, w, COLOR_2X6);
-      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6);
+      rect(ctx, x0 - thick / 2, y0, thick, w, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
+      rect(ctx, x0 + d - thick / 2, y0, thick, w, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
       // Front/back ledgers along width
-      rect(ctx, x0 - thick / 2, y0 - thick / 2, d + thick, thick, COLOR_2X6);
-      rect(ctx, x0 - thick / 2, y0 + w - thick / 2, d + thick, thick, COLOR_2X6);
+      rect(ctx, x0 - thick / 2, y0 - thick / 2, d + thick, thick, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
+      rect(ctx, x0 - thick / 2, y0 + w - thick / 2, d + thick, thick, COLOR_2X6, "Rim Joist - 2x6x8' ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
     }
 
     // ---- FRONT/BACK (elevation): 2x4 wall with plates; show roof joist depth (5.5") band ----
@@ -193,20 +208,20 @@ function useFramingDraw(view: string) {
 
       // Bottom plate (2x4) height = 1.5" - with gap for doorway
       if (view === "front") {
-        rect(ctx, x0, y0 + h - thick, doorX, thick, COLOR_2X4); // left of door
-        rect(ctx, x0 + doorX + doorWidth, y0 + h - thick, w - doorX - doorWidth, thick, COLOR_2X4); // right of door
+        rect(ctx, x0, y0 + h - thick, doorX, thick, COLOR_2X4, "Bottom Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
+        rect(ctx, x0 + doorX + doorWidth, y0 + h - thick, w - doorX - doorWidth, thick, COLOR_2X4, "Bottom Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
       } else {
-        rect(ctx, x0, y0 + h - thick, w, thick, COLOR_2X4); // full bottom plate on back
+        rect(ctx, x0, y0 + h - thick, w, thick, COLOR_2X4, "Bottom Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
       }
 
       // Top plate (2x4)
-      rect(ctx, x0, y0, w, thick, COLOR_2X4);
+      rect(ctx, x0, y0, w, thick, COLOR_2X4, "Top Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
 
       // Studs (2x4): 1.5" wide by full wall height between plates
       const clearHeight = h - 2 * thick;
       // End corner posts (4x4): 3.5" wide
-      rect(ctx, x0, y0 + thick, fourByFour, clearHeight, COLOR_4X4);
-      rect(ctx, x0 + w - fourByFour, y0 + thick, fourByFour, clearHeight, COLOR_4X4);
+      rect(ctx, x0, y0 + thick, fourByFour, clearHeight, COLOR_4X4, "Corner Post - 4x4x8' ($13.50) - 3.5\" × 3.5\"", componentRegions.current);
+      rect(ctx, x0 + w - fourByFour, y0 + thick, fourByFour, clearHeight, COLOR_4X4, "Corner Post - 4x4x8' ($13.50) - 3.5\" × 3.5\"", componentRegions.current);
 
       // Interior studs on-center starting at 16" from left edge
       for (let x = studOC; x < w; x += studOC) {
@@ -214,7 +229,7 @@ function useFramingDraw(view: string) {
         if (view === "front" && x >= doorX && x <= doorX + doorWidth) {
           continue;
         }
-        rect(ctx, x0 + x - thick / 2, y0 + thick, thick, clearHeight, COLOR_2X4);
+        rect(ctx, x0 + x - thick / 2, y0 + thick, thick, clearHeight, COLOR_2X4, "Wall Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
       }
 
       // Add doorway framing on front view
@@ -223,46 +238,46 @@ function useFramingDraw(view: string) {
         const doorTopY = y0 + h - thick - doorHeight;
 
         // King studs (full height on each side of door)
-        rect(ctx, x0 + doorX - thick, y0 + thick, thick, clearHeight, COLOR_2X4);
-        rect(ctx, x0 + doorX + doorWidth, y0 + thick, thick, clearHeight, COLOR_2X4);
+        rect(ctx, x0 + doorX - thick, y0 + thick, thick, clearHeight, COLOR_2X4, "King Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
+        rect(ctx, x0 + doorX + doorWidth, y0 + thick, thick, clearHeight, COLOR_2X4, "King Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
 
         // Jack studs (trimmer studs supporting header)
         const jackHeight = doorHeight - headerHeight;
-        rect(ctx, x0 + doorX, doorTopY + headerHeight, thick, jackHeight, COLOR_2X4);
-        rect(ctx, x0 + doorX + doorWidth - thick, doorTopY + headerHeight, thick, jackHeight, COLOR_2X4);
+        rect(ctx, x0 + doorX, doorTopY + headerHeight, thick, jackHeight, COLOR_2X4, "Jack Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
+        rect(ctx, x0 + doorX + doorWidth - thick, doorTopY + headerHeight, thick, jackHeight, COLOR_2X4, "Jack Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
 
         // Header (double 2x4 with spacer shown as solid)
-        rect(ctx, x0 + doorX, doorTopY, doorWidth, headerHeight, COLOR_2X6);
+        rect(ctx, x0 + doorX, doorTopY, doorWidth, headerHeight, COLOR_2X6, "Door Header - 2x6 ($8.75) - 1.5\" × 5.5\"", componentRegions.current);
 
         // Cripple stud above header (centered)
         const crippleHeight = doorTopY - (y0 + thick);
         if (crippleHeight > 0) {
-          rect(ctx, x0 + doorX + doorWidth / 2 - thick / 2, y0 + thick, thick, crippleHeight, COLOR_2X4);
+          rect(ctx, x0 + doorX + doorWidth / 2 - thick / 2, y0 + thick, thick, crippleHeight, COLOR_2X4, "Cripple Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
         }
       }
 
       // Top plate cap (2x4) shown as 1.5" sitting on top of top plate
-      rect(ctx, x0, y0 - thick, w, thick, COLOR_2X4);
+      rect(ctx, x0, y0 - thick, w, thick, COLOR_2X4, "Top Cap Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
     }
 
     // ---- SIDES (elevation of 16' walls): 2x4 studs + plates; show roof band ----
     if (view === "sideL" || view === "sideR") {
       // Plates (2x4)
-      rect(ctx, x0, y0 + h - thick, d, thick, COLOR_2X4); // bottom
-      rect(ctx, x0, y0, d, thick, COLOR_2X4); // top
+      rect(ctx, x0, y0 + h - thick, d, thick, COLOR_2X4, "Bottom Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
+      rect(ctx, x0, y0, d, thick, COLOR_2X4, "Top Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
 
       // Studs along 16' length
       const clearHeight = h - 2 * thick;
       // End corner posts (4x4): 3.5" wide
-      rect(ctx, x0, y0 + thick, fourByFour, clearHeight, COLOR_4X4);
-      rect(ctx, x0 + d - fourByFour, y0 + thick, fourByFour, clearHeight, COLOR_4X4);
+      rect(ctx, x0, y0 + thick, fourByFour, clearHeight, COLOR_4X4, "Corner Post - 4x4x8' ($13.50) - 3.5\" × 3.5\"", componentRegions.current);
+      rect(ctx, x0 + d - fourByFour, y0 + thick, fourByFour, clearHeight, COLOR_4X4, "Corner Post - 4x4x8' ($13.50) - 3.5\" × 3.5\"", componentRegions.current);
       // Interior studs on-center
       for (let x = studOC; x < d; x += studOC) {
-        rect(ctx, x0 + x - thick / 2, y0 + thick, thick, clearHeight, COLOR_2X4);
+        rect(ctx, x0 + x - thick / 2, y0 + thick, thick, clearHeight, COLOR_2X4, "Wall Stud - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
       }
 
       // Top plate cap (2x4) shown as 1.5"
-      rect(ctx, x0, y0 - thick, d, thick, COLOR_2X4);
+      rect(ctx, x0, y0 - thick, d, thick, COLOR_2X4, "Top Cap Plate - 2x4x8' ($3.45) - 1.5\" × 3.5\"", componentRegions.current);
     }
 
     // ---- 3D isometric view ----
@@ -984,12 +999,12 @@ function useFramingDraw(view: string) {
     }
   };
 
-  return draw;
+  return { draw, componentRegions };
 }
 
 function useBlueprintCanvas(view: string, rotation3D: { x: number; y: number; z: number }, showSiding: boolean, showRoofing: boolean, showFlooring: boolean, showRoofDeck: boolean) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const draw = useFramingDraw(view);
+  const { draw, componentRegions } = useFramingDraw(view);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1015,7 +1030,7 @@ function useBlueprintCanvas(view: string, rotation3D: { x: number; y: number; z:
     draw(ctx, scale, width, height, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
   }, [view, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck, draw]);
 
-  return canvasRef;
+  return { canvasRef, componentRegions };
 }
 
 export default function BlueprintEstimator() {
@@ -1030,8 +1045,47 @@ export default function BlueprintEstimator() {
   const [showRoofDeck, setShowRoofDeck] = useState(false);
   const [showControlPanel, setShowControlPanel] = useState(true);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
-  const { items, fullTotal, alreadyOwned, total } = computeEstimate(DEFAULT_PARTS);
-  const canvasRef = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
+  const [acquiredItems, setAcquiredItems] = useState<Set<number>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('acquiredItems');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    }
+    return new Set();
+  });
+  const [showMessage, setShowMessage] = useState(false);
+
+  const toggleAcquired = (index: number) => {
+    setAcquiredItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      localStorage.setItem('acquiredItems', JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
+  };
+
+  const handleDoNotPress = () => {
+    let count = 0;
+    const interval = setInterval(() => {
+      setShowMessage(prev => !prev);
+      count++;
+      if (count === 6) { // 3 blinks = 6 state changes
+        clearInterval(interval);
+        setShowMessage(false);
+      }
+    }, 100);
+  };
+
+  const partsWithAcquired = DEFAULT_PARTS.map((part, index) => ({
+    ...part,
+    excluded: part.excluded || acquiredItems.has(index)
+  }));
+
+  const { items, fullTotal, alreadyOwned, total } = computeEstimate(partsWithAcquired);
+  const { canvasRef, componentRegions } = useBlueprintCanvas(activeView, rotation3D, showSiding, showRoofing, showFlooring, showRoofDeck);
 
   const reset3DView = () => {
     setRotation3D({ x: 0, y: 0, z: 0 });
@@ -1123,6 +1177,18 @@ export default function BlueprintEstimator() {
                           />
                         </button>
                       )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleAcquired(i);
+                        }}
+                        className={`ml-2 flex-shrink-0 hover:scale-105 transition-transform px-2 py-1 rounded ${
+                          acquiredItems.has(i) ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-500'
+                        }`}
+                        title={acquiredItems.has(i) ? 'Mark as not acquired' : 'Mark as acquired'}
+                      >
+                        ✓
+                      </button>
                     </div>
 
                     {expandedPart === i && p.breakdown && (
@@ -1222,18 +1288,33 @@ export default function BlueprintEstimator() {
                     height={520}
                     className={`w-full h-full ${activeView === "3d" ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"}`}
                     onMouseMove={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const x = e.clientX - rect.left;
-                      const y = e.clientY - rect.top;
+                      if (!canvasRef.current) return;
 
-                      // Simple component detection based on canvas position
-                      // This is a basic implementation - you may want to make this more sophisticated
-                      if (activeView === "front" || activeView === "back") {
-                        if (y > 200 && y < 500) {
-                          setTooltip({ x: e.clientX, y: e.clientY, text: "2x4x8' Stud - $3.45 ea (1.5\" x 3.5\")" });
-                        } else {
-                          setTooltip(null);
+                      const canvas = canvasRef.current;
+                      const rect = canvas.getBoundingClientRect();
+
+                      // Convert mouse coordinates to canvas coordinates
+                      const scaleX = canvas.width / rect.width;
+                      const scaleY = canvas.height / rect.height;
+                      const canvasX = (e.clientX - rect.left) * scaleX;
+                      const canvasY = (e.clientY - rect.top) * scaleY;
+
+                      // Check if mouse is over any component
+                      let foundComponent = null;
+                      for (const region of componentRegions.current) {
+                        if (
+                          canvasX >= region.x &&
+                          canvasX <= region.x + region.width &&
+                          canvasY >= region.y &&
+                          canvasY <= region.y + region.height
+                        ) {
+                          foundComponent = region;
+                          break; // Found a match, stop searching
                         }
+                      }
+
+                      if (foundComponent) {
+                        setTooltip({ x: e.clientX, y: e.clientY, text: foundComponent.label });
                       } else {
                         setTooltip(null);
                       }
@@ -1432,6 +1513,23 @@ export default function BlueprintEstimator() {
             </DialogClose>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Do Not Press Button */}
+      <button
+        onClick={handleDoNotPress}
+        className="fixed bottom-4 right-4 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-md font-semibold shadow-lg transition-colors z-50"
+      >
+        Do not press
+      </button>
+
+      {/* Blinking Message */}
+      {showMessage && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-40">
+          <p className="text-red-600 font-bold text-[120px] leading-none">
+            Leland you want to move to Bend.
+          </p>
+        </div>
       )}
     </div>
   );
