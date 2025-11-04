@@ -1061,9 +1061,9 @@ export default function BlueprintEstimator() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 text-[11px] font-normal">
-      <div className="mx-auto max-w-7xl p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <Card className="lg:col-span-5 rounded-2xl shadow-sm border-slate-200">
-          <CardHeader>
+      <div className="mx-auto max-w-7xl p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-stretch">
+        <Card className="lg:col-span-5 rounded-2xl shadow-sm border-slate-200 flex flex-col">
+          <CardHeader className="flex-shrink-0">
             <CardTitle className="text-xl mb-2">Parts & Pricing</CardTitle>
             <div className="bg-slate-100 px-3 py-2 rounded-md flex justify-between items-center text-sm font-medium">
               <span>Total Estimate</span>
@@ -1071,8 +1071,8 @@ export default function BlueprintEstimator() {
             </div>
           </CardHeader>
 
-          <CardContent>
-            <ScrollArea className="h-[520px] pr-2">
+          <CardContent className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1 pr-2">
               <ul className="space-y-3">
                 {items.map((p, i) => (
                   <li key={i} className="border rounded-md p-2 bg-slate-50">
@@ -1152,12 +1152,12 @@ export default function BlueprintEstimator() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-7 rounded-2xl shadow-sm border-slate-200">
-          <CardHeader>
+        <Card className="lg:col-span-7 rounded-2xl shadow-sm border-slate-200 flex flex-col">
+          <CardHeader className="flex-shrink-0">
             <CardTitle className="text-xl mb-2">Blueprint Canvas</CardTitle>
             <p className="text-sm text-slate-600">2×4 shown at 1.5″×3.5″, 2×6 shown at 1.5″×5.5″. 16″ O.C. spacing.</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex flex-col overflow-hidden">
             <Tabs value={activeView} onValueChange={setActiveView}>
               <TabsList className="flex justify-between mb-2">
                 <TabsTrigger value="front">Front</TabsTrigger>
